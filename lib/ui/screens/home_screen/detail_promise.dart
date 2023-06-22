@@ -172,17 +172,9 @@ class RightForm extends StatelessWidget {
             onTap: () {
               detailPromiseService.uploadImage(promise).then((value) {
                 if (value) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("Upload Success"),
-                    ),
-                  );
+                  print("Upload Success");
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("Upload Failed"),
-                    ),
-                  );
+                  print("Upload Failed");
                 }
               });
             },
@@ -228,7 +220,15 @@ class RightForm extends StatelessWidget {
             width: double.infinity,
             height: 50,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text("Upload success"),
+                  ),
+                );
+
+                Navigator.pushReplacementNamed(context, '/home');
+              },
               child: Text("Send result"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xff6B4EFF),

@@ -175,6 +175,7 @@ class RightSection extends StatelessWidget {
                 ),
               ),
               child: TextField(
+                obscureText: true,
                 onChanged: (value) {
                   passwordController.text = value;
                 },

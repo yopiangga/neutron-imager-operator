@@ -264,11 +264,11 @@ class StatusEmblem extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 20),
       height: 25,
       decoration: BoxDecoration(
-        color: Colors.green[100],
+        color: color,
         borderRadius: BorderRadius.circular(25 / 2),
       ),
       child: Center(
-        child: Text("${promise.status}", style: TextStyle(color: color)),
+        child: Text("${promise.status}", style: TextStyle(color: Colors.white)),
       ),
     );
   }
