@@ -37,29 +37,35 @@ class DetailPromiseService {
 
     uploadInput.click();
 
-    await uploadInput.onChange.listen((event) {
-      file = uploadInput.files!.first;
-      final reader = FileReader();
+    try {
+      await uploadInput.onChange.listen((event) async {
+        file = uploadInput.files!.first;
+        final reader = FileReader();
 
-      reader.readAsDataUrl(file);
+        reader.readAsDataUrl(file);
 
-      reader.onLoadEnd.listen((event) {
-        print("file.name : ${file.name}");
-        uploadFile(file).then((value) {
-          link = value;
-          print("LINK 2: $link");
+        reader.onLoadEnd.listen((event) {
+          print("file.name : ${file.name}");
+          uploadFile(file).then((value) async {
+            link = value;
+            print("LINK 2: $link");
+
+            //update promise firestore
+            try {
+              await firestore.collection('promise').doc(promise.id).update({
+                'status': 'uploaded',
+                'image_scan': link,
+                'diagnose.ai': stroke[Random().nextInt(3)]
+              });
+              print("berhasil update");
+              return true;
+            } catch (e) {
+              print("ERROR 1: $e");
+              return false;
+            }
+          });
         });
       });
-    });
-
-    //update promise firestore
-    try {
-      await firestore.collection('promise').doc(promise.id).update({
-        'status': 'uploaded',
-        'image_scan': link,
-        'diagnose.ai': stroke[Random().nextInt(3)]
-      });
-      print("berhasil update");
       return true;
     } catch (e) {
       print("ERROR 1: $e");
