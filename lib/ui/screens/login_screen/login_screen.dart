@@ -83,9 +83,13 @@ class LeftSection extends StatelessWidget {
 }
 
 class RightSection extends StatelessWidget {
-  const RightSection({
+  RightSection({
     super.key,
   });
+
+  final AuthService auth = AuthService();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -137,7 +141,9 @@ class RightSection extends StatelessWidget {
                 ),
               ),
               child: TextField(
-                onChanged: (value) {},
+                onChanged: (value) {
+                  emailController.text = value;
+                },
                 decoration: InputDecoration(
                   border: InputBorder.none,
                 ),
@@ -169,7 +175,9 @@ class RightSection extends StatelessWidget {
                 ),
               ),
               child: TextField(
-                onChanged: (value) {},
+                onChanged: (value) {
+                  passwordController.text = value;
+                },
                 decoration: InputDecoration(
                   border: InputBorder.none,
                 ),
@@ -203,19 +211,41 @@ class RightSection extends StatelessWidget {
             SizedBox(
               height: 50,
             ),
-            Container(
-              width: 200,
-              padding: EdgeInsets.symmetric(vertical: 20),
-              decoration: BoxDecoration(
-                color: Color(0xff6B4EFF),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Center(
-                child: Text(
-                  "Sign in",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+            InkWell(
+              onTap: () {
+                // print(emailController.text);
+                // print(passwordController.text);
+
+                auth
+                    .signIn(emailController.text, passwordController.text)
+                    .then((value) {
+                  if (value != null) {
+                    Navigator.pushReplacementNamed(context, '/home');
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Email or Password is wrong'),
+                      ),
+                    );
+                  }
+                }).catchError((e) {
+                  print(e);
+                });
+              },
+              child: Container(
+                width: 200,
+                padding: EdgeInsets.symmetric(vertical: 20),
+                decoration: BoxDecoration(
+                  color: Color(0xff6B4EFF),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Center(
+                  child: Text(
+                    "Sign in",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),

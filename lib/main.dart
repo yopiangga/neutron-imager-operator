@@ -22,6 +22,11 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: LoginScreen(),
+      debugShowCheckedModeBanner: false,
+      routes: {
+        '/login': (context) => LoginScreen(),
+        '/home': (context) => MyHomePage(),
+      },
     );
   }
 }

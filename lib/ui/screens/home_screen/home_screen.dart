@@ -9,6 +9,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int selectedIndex = 0;
+  final HomeService homeService = HomeService();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,44 +37,59 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              itemCount: 20,
-              itemBuilder: (context, index) {
-                return InkWell(
-                  onTap: () {
-                    setState(() {
-                      selectedIndex = index;
-                    });
-                  },
-                  child: Container(
-                    padding: EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Color.fromARGB(255, 233, 233, 233),
-                          width: 1,
+            child: FutureBuilder(
+                future: homeService.getAllPromise(),
+                builder: (context, snapshot) {
+                  // print(snapshot.data);
+
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+
+                  List<Promise> promise = snapshot.data as List<Promise>;
+                  return ListView.builder(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: 1,
+                    itemBuilder: (context, index) {
+                      return InkWell(
+                        onTap: () {
+                          setState(() {
+                            selectedIndex = index;
+                          });
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: Color.fromARGB(255, 233, 233, 233),
+                                width: 1,
+                              ),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              StatusEmblem(promise: promise[index]),
+                              PatientName(
+                                  name: promise[index].patient.fullname),
+                              DatePromise(time: promise[index].time),
+                              Text("${promise[index].hospital.name}"),
+                              Text("${promise[index].doctor.fullname}"),
+                              ButtonOption(
+                                index: index,
+                                selectedIndex: selectedIndex,
+                                promise: promise[index],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        StatusEmblem(),
-                        PatientName(),
-                        DatePromise(),
-                        Text("Eka Hospital Bogor"),
-                        Text("dr. Slamet Sukma Djaja, Sp.PD"),
-                        ButtonOption(
-                          index: index,
-                          selectedIndex: selectedIndex,
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+                      );
+                    },
+                  );
+                }),
           ),
         ],
       ),
@@ -84,9 +101,11 @@ class ButtonOption extends StatelessWidget {
   ButtonOption({
     required this.selectedIndex,
     required this.index,
+    required this.promise,
   });
   int index;
   int selectedIndex;
+  Promise promise;
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +137,7 @@ class ButtonOption extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => DetailPromise(),
+                  builder: (context) => DetailPromise(promise: promise),
                 ),
               );
             },
@@ -222,12 +241,25 @@ class AppBarSearch extends StatelessWidget {
 }
 
 class StatusEmblem extends StatelessWidget {
-  const StatusEmblem({
+  StatusEmblem({
+    required this.promise,
     super.key,
   });
+  final Promise promise;
+  Color color = Colors.green;
 
   @override
   Widget build(BuildContext context) {
+    if (promise.status == "pending") {
+      color = Colors.amber;
+    } else if (promise.status == "rejected") {
+      color = Colors.red;
+    } else if (promise.status == "uploaded") {
+      color = Colors.blue;
+    } else {
+      color = Colors.green;
+    }
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20),
       height: 25,
@@ -236,16 +268,18 @@ class StatusEmblem extends StatelessWidget {
         borderRadius: BorderRadius.circular(25 / 2),
       ),
       child: Center(
-        child: Text("Completet", style: TextStyle(color: Colors.green)),
+        child: Text("${promise.status}", style: TextStyle(color: color)),
       ),
     );
   }
 }
 
 class DatePromise extends StatelessWidget {
-  const DatePromise({
+  DatePromise({
+    required this.time,
     super.key,
   });
+  String time;
 
   @override
   Widget build(BuildContext context) {
@@ -253,11 +287,13 @@ class DatePromise extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "08.00 am",
+          //ambil bagian jam dengan format 10:00 am
+          "${DateFormat.jm().format(DateTime.parse(time))}",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         SizedBox(height: 5),
-        Text("Apr 24, 2023"),
+        //ambil bagian tanggal dengan format Apr 24, 2023
+        Text("${DateFormat.yMMMMd().format(DateTime.parse(time))}"),
       ],
     );
   }
@@ -265,8 +301,11 @@ class DatePromise extends StatelessWidget {
 
 class PatientName extends StatelessWidget {
   const PatientName({
+    required this.name,
     super.key,
   });
+
+  final String name;
 
   @override
   Widget build(BuildContext context) {
@@ -274,7 +313,7 @@ class PatientName extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Jason Allen",
+          name,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         SizedBox(height: 5),

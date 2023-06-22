@@ -1,13 +1,23 @@
 part of '../screen.dart';
 
 class DetailPromise extends StatefulWidget {
-  const DetailPromise({super.key});
+  const DetailPromise({
+    super.key,
+    required this.promise,
+  });
+  final Promise promise;
 
   @override
-  State<DetailPromise> createState() => _DetailPromiseState();
+  State<DetailPromise> createState() => _DetailPromiseState(promise: promise);
 }
 
 class _DetailPromiseState extends State<DetailPromise> {
+  _DetailPromiseState({
+    required this.promise,
+  });
+
+  final Promise promise;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,7 +50,7 @@ class _DetailPromiseState extends State<DetailPromise> {
               ],
             ),
           ),
-          FormPatient(),
+          FormPatient(promise: promise),
         ],
       ),
     );
@@ -48,39 +58,66 @@ class _DetailPromiseState extends State<DetailPromise> {
 }
 
 class FormPatient extends StatelessWidget {
-  const FormPatient({
+  FormPatient({
+    required this.promise,
     super.key,
   });
 
+  final DetailPromiseService detailPromiseService = DetailPromiseService();
+  final Promise promise;
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.8,
-      width: MediaQuery.of(context).size.width * 0.9,
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: Color.fromARGB(255, 233, 233, 233),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          LeftForm(),
-          RightForm(),
-        ],
-      ),
-    );
+    return FutureBuilder(
+        future: detailPromiseService.getUser(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          // print(snapshot.data!['fullname']);
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.7,
+            width: MediaQuery.of(context).size.width * 0.9,
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: Color.fromARGB(255, 233, 233, 233),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                LeftForm(promise: promise),
+                RightForm(
+                  email: snapshot.data!['email'],
+                  name: snapshot.data!['fullname'],
+                  promise: promise,
+                ),
+              ],
+            ),
+          );
+        });
   }
 }
 
 class RightForm extends StatelessWidget {
-  const RightForm({
+  RightForm({
+    required this.name,
+    required this.email,
+    required this.promise,
     super.key,
   });
+
+  final DetailPromiseService detailPromiseService = DetailPromiseService();
+  final String name;
+  final String email;
+  final Promise promise;
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +142,7 @@ class RightForm extends StatelessWidget {
                 width: 1,
               ),
             ),
-            child: Text("Adi Sucipto S.Tr. Rad"),
+            child: Text(name),
           ),
           SizedBox(height: 20),
           Text(
@@ -123,7 +160,7 @@ class RightForm extends StatelessWidget {
                 width: 1,
               ),
             ),
-            child: Text("adisucipto@ekahospital.com"),
+            child: Text(email),
           ),
           SizedBox(height: 20),
           Text(
@@ -131,27 +168,46 @@ class RightForm extends StatelessWidget {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 5),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-            width: double.infinity,
-            height: 200,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(5),
-              border: Border.all(
-                color: Color.fromARGB(255, 233, 233, 233),
-                width: 1,
+          InkWell(
+            onTap: () {
+              detailPromiseService.uploadImage(promise).then((value) {
+                if (value) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Upload Success"),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Upload Failed"),
+                    ),
+                  );
+                }
+              });
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+              width: double.infinity,
+              height: 200,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                border: Border.all(
+                  color: Color.fromARGB(255, 233, 233, 233),
+                  width: 1,
+                ),
               ),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.file_copy_outlined),
-                SizedBox(height: 5),
-                Text(
-                  "Upload File",
-                  style: TextStyle(fontSize: 10),
-                )
-              ],
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.file_copy_outlined),
+                  SizedBox(height: 5),
+                  Text(
+                    "Upload File",
+                    style: TextStyle(fontSize: 10),
+                  )
+                ],
+              ),
             ),
           ),
           SizedBox(height: 20),
@@ -190,8 +246,11 @@ class RightForm extends StatelessWidget {
 
 class LeftForm extends StatelessWidget {
   const LeftForm({
+    required this.promise,
     super.key,
   });
+
+  final Promise promise;
 
   @override
   Widget build(BuildContext context) {
@@ -217,7 +276,7 @@ class LeftForm extends StatelessWidget {
                 width: 1,
               ),
             ),
-            child: Text("dr. Slamet Sukma Djaja, Sp.PD"),
+            child: Text("${promise.doctor.fullname}"),
           ),
           SizedBox(height: 20),
           Text(
@@ -235,7 +294,8 @@ class LeftForm extends StatelessWidget {
                 width: 1,
               ),
             ),
-            child: Text("April 27, 2023 | 06.00 PM"),
+            child: Text(
+                "${DateFormat.yMMMMd().format(DateTime.parse(promise.time))} | ${DateFormat.jm().format(DateTime.parse(promise.time))} PM"),
           ),
           SizedBox(height: 20),
           Text(
@@ -253,7 +313,7 @@ class LeftForm extends StatelessWidget {
                 width: 1,
               ),
             ),
-            child: Text("yopiangga@it.student.pens.ac.id"),
+            child: Text("${promise.patient.email}"),
           ),
           SizedBox(height: 20),
           Text(
@@ -271,7 +331,7 @@ class LeftForm extends StatelessWidget {
                 width: 1,
               ),
             ),
-            child: Text("Alfian Prisma Yopiangga"),
+            child: Text("${promise.patient.fullname}"),
           ),
           SizedBox(height: 20),
           Row(
@@ -295,7 +355,7 @@ class LeftForm extends StatelessWidget {
                         width: 1,
                       ),
                     ),
-                    child: Text("Kediri"),
+                    child: Text("${promise.patient.pob}"),
                   ),
                 ],
               ),
@@ -317,7 +377,8 @@ class LeftForm extends StatelessWidget {
                         width: 1,
                       ),
                     ),
-                    child: Text("June 18, 2002"),
+                    child: Text(
+                        "${DateFormat.yMMMMd().format(DateTime.parse(promise.patient.dob))}"),
                   ),
                 ],
               ),
@@ -339,28 +400,28 @@ class LeftForm extends StatelessWidget {
                 width: 1,
               ),
             ),
-            child: Text("3506131806020001"),
+            child: Text("${promise.patient.nik}"),
           ),
           SizedBox(height: 20),
-          Text(
-            "Address",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 5),
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5),
-                border: Border.all(
-                  color: Color.fromARGB(255, 233, 233, 233),
-                  width: 1,
-                ),
-              ),
-              child: Text("Jl. Raya Kediri - Pare, Kediri, Jawa Timur"),
-            ),
-          ),
+          // Text(
+          //   "Address",
+          //   style: TextStyle(fontWeight: FontWeight.bold),
+          // ),
+          // SizedBox(height: 5),
+          // Expanded(
+          //   child: Container(
+          //     width: double.infinity,
+          //     padding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+          //     decoration: BoxDecoration(
+          //       borderRadius: BorderRadius.circular(5),
+          //       border: Border.all(
+          //         color: Color.fromARGB(255, 233, 233, 233),
+          //         width: 1,
+          //       ),
+          //     ),
+          //     child: Text("Jl. Raya Kediri - Pare, Kediri, Jawa Timur"),
+          //   ),
+          // ),
         ],
       ),
     );

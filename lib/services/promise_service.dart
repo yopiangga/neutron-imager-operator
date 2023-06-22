@@ -11,46 +11,6 @@ class PromiseService {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   NotificationService notificationService = NotificationService();
 
-  Future createPromise(Hospital hospital, Patient patient, String time,
-      String doctorName) async {
-    try {
-      //cari dokter dari hospital
-      var data;
-      for (var item in hospital.doctors) {
-        if (item['fullname'] == doctorName) {
-          data = item;
-        }
-      }
-      Doctor doctor = Doctor(
-        email: data['email'],
-        fullname: data['fullname'],
-        uid: data['uid'],
-      );
-
-      Promise promise = Promise(
-        diagnose: {
-          "ai": "",
-          "doctor": "",
-        },
-        doctor: doctor,
-        hospital: hospital,
-        image_scan: "",
-        note: "-",
-        patient: patient,
-        status: "pending",
-        time: time,
-      );
-      await firestore.collection('promise').add(promise.toJson());
-      await notificationService.createNotification(
-          "Create Promise Success", "Your promise has been created");
-
-      return true;
-    } catch (e) {
-      print("ERROR: $e");
-      return false;
-    }
-  }
-
   Future getPromise() async {
     try {
       var data = await firestore.collection('promise').get();
