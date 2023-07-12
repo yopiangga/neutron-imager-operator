@@ -461,7 +461,7 @@ class AppBarLogo extends StatelessWidget {
           ),
           SizedBox(width: 10),
           Text(
-            "Naraya",
+            "Neutron",
             style: TextStyle(
               decoration: TextDecoration.none,
               color: Colors.black,
@@ -471,7 +471,7 @@ class AppBarLogo extends StatelessWidget {
           ),
           SizedBox(width: 5),
           Text(
-            "Vision",
+            "Imager",
             style: TextStyle(
               decoration: TextDecoration.none,
               color: Color(0xff6B4EFF),

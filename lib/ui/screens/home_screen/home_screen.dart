@@ -51,7 +51,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   List<Promise> promise = snapshot.data as List<Promise>;
                   return ListView.builder(
                     padding: EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: 1,
+                    itemCount: promise.length,
                     itemBuilder: (context, index) {
                       return InkWell(
                         onTap: () {
@@ -199,7 +199,7 @@ class AppBarSearch extends StatelessWidget {
           ),
           SizedBox(width: 10),
           Text(
-            "Naraya",
+            "Neutron",
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 25,
@@ -207,7 +207,7 @@ class AppBarSearch extends StatelessWidget {
           ),
           SizedBox(width: 5),
           Text(
-            "Vision",
+            "Imager",
             style: TextStyle(
                 color: Color(0xff6B4EFF),
                 fontWeight: FontWeight.bold,

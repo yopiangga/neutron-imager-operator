@@ -1,5 +1,8 @@
 import 'dart:html';
 import 'dart:math';
+import 'dart:convert';
+// import 'dart:io';
+import 'package:http/http.dart' as http;
 
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -48,14 +51,15 @@ class DetailPromiseService {
           print("file.name : ${file.name}");
           uploadFile(file).then((value) async {
             link = value;
-            print("LINK 2: $link");
+            String base64 = reader.result.toString().split(",").last;
+            String diagnose = await getDiagnose(base64);
 
             //update promise firestore
             try {
               await firestore.collection('promise').doc(promise.id).update({
                 'status': 'uploaded',
                 'image_scan': link,
-                'diagnose.ai': stroke[Random().nextInt(3)]
+                'diagnose.ai': diagnose,
               });
               print("berhasil update");
               return true;
@@ -92,5 +96,16 @@ class DetailPromiseService {
       print("ERROR 2: $e");
       return "";
     }
+  }
+
+  Future<String> getDiagnose(String img) async {
+    //get diagnose dari api
+    // print(img);
+    final res = await http.post(Uri.parse("http://192.168.43.119:5000/submit"),
+        body: jsonEncode({"image": img}),
+        headers: {"Content-Type": "application/json"});
+    print("res.body : ${res.body}");
+
+    return json.decode(res.body);
   }
 }

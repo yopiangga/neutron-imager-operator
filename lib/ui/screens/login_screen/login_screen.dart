@@ -43,7 +43,7 @@ class LeftSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Welcome to Naraya Vision",
+                "Welcome to Neutron Imager",
                 style: TextStyle(
                   fontSize: 60,
                   color: Colors.white,
